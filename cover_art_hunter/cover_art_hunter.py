@@ -10,7 +10,6 @@ from typing import Any, Dict, List, Optional, Tuple
 import aiohttp
 from PIL import Image
 from prompt_toolkit import prompt
-from rag_kit.logging import setup_logger
 from tenacity import RetryError, retry, stop_after_attempt, wait_exponential
 from tqdm.asyncio import tqdm
 
@@ -352,7 +351,12 @@ async def main(
                 json.dump(config, file, indent=4)
 
 
-if __name__ == "__main__":
+def cli():
+    """Console script entry point.
+
+    Mirrors the previous __main__ block so that uv / pip installed
+    entry point 'cover-art-hunter' works. Returns None.
+    """
     parser = argparse.ArgumentParser(
         description="Fetch cover art for given artist and album names."
     )
@@ -376,7 +380,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     log_level = getattr(logging, args.verbosity.upper(), logging.ERROR)
-    logger = setup_logger(__name__, log_level)
+    # Basic configuration only; user requested default formatter.
+    logging.basicConfig(level=log_level)
+    logger = logging.getLogger(__name__)
 
     config_loaded_from_file = False
 
@@ -438,3 +444,7 @@ if __name__ == "__main__":
         config["artists_albums"] = artists_albums
 
     asyncio.run(main(config, logger, not config_loaded_from_file))
+
+
+if __name__ == "__main__":  # pragma: no cover
+    cli()

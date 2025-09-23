@@ -23,28 +23,30 @@ openssl s_client -showcerts -connect archive.org:443
 ## Arguments and Flags
 
 - `--config_json` (optional): A JSON string containing the configuration including artists, albums, release type, status, output directory, and save images flag.
-  - Example: 
-\```json
-{
+
+  - Example:
+    \```json
+    {
     "artists_albums": [
-        {
-            "artist": "Pink Floyd",
-            "albums": ["The Dark Side of the Moon"]
-        },
-        {
-            "artist": "Led Zeppelin",
-            "albums": ["IV"]
-        }
+    {
+    "artist": "Pink Floyd",
+    "albums": ["The Dark Side of the Moon"]
+    },
+    {
+    "artist": "Led Zeppelin",
+    "albums": ["IV"]
+    }
     ],
     "release_type": "Album",
     "status": "Official",
     "save_images": true,
     "output_dir": "/path/to/output",
     "skip_existing": true
-}
-\```
+    }
+    \```
 
 - `--config_file` (optional): Path to a JSON file containing the configuration.
+
   - Example: `--config_file /path/to/config.json`
 
 - `--verbosity` (optional): Set the logging verbosity level. Choices are `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`. Default is `INFO`.
@@ -77,14 +79,14 @@ Follow the prompts
 ```sh
 Please enter the release type (e.g., Album, Single, or press Enter for all): Album
 Please enter the release status (e.g., Official, Promotion, or press Enter for all): Official
-Would you like to save the images? (yes/no) [no]: 
+Would you like to save the images? (yes/no) [no]:
 Please enter the output directory (or press Enter for current directory): /path/to/output
-Would you like to skip existing images? (yes/no) [yes]: 
+Would you like to skip existing images? (yes/no) [yes]:
 Please enter the artist name (or press Enter to finish): Pink Floyd
 Please enter the album names (comma separated, or use quotes for names with commas): "The Dark Side of the Moon", "Wish You Were Here"
 Please enter the artist name (or press Enter to finish): Led Zeppelin
 Please enter the album names (comma separated, or use quotes for names with commas): IV, "Physical Graffiti"
-Please enter the artist name (or press Enter to finish): 
+Please enter the artist name (or press Enter to finish):
 ```
 
 ### Output
@@ -93,29 +95,29 @@ The tool will save the configuration used in the top-level output directory as a
 
 .
 ├── Pink Floyd
-│   ├── The Dark Side of the Moon
-│   │   ├── The_Dark_Side_of_the_Moon.json
-│   │   ├── cover_art_image1.jpg
-│   │   ├── cover_art_image2.jpg
-│   │   └── ...
-│   ├── Wish You Were Here
-│   │   ├── Wish_You_Were_Here.json
-│   │   ├── cover_art_image1.jpg
-│   │   ├── cover_art_image2.jpg
-│   │   └── ...
-│   └── highest_resolution_images_20240702_123456.json
+│ ├── The Dark Side of the Moon
+│ │ ├── The_Dark_Side_of_the_Moon.json
+│ │ ├── cover_art_image1.jpg
+│ │ ├── cover_art_image2.jpg
+│ │ └── ...
+│ ├── Wish You Were Here
+│ │ ├── Wish_You_Were_Here.json
+│ │ ├── cover_art_image1.jpg
+│ │ ├── cover_art_image2.jpg
+│ │ └── ...
+│ └── highest_resolution_images_20240702_123456.json
 ├── Led Zeppelin
-│   ├── IV
-│   │   ├── IV.json
-│   │   ├── cover_art_image1.jpg
-│   │   ├── cover_art_image2.jpg
-│   │   └── ...
-│   ├── Physical Graffiti
-│   │   ├── Physical_Graffiti.json
-│   │   ├── cover_art_image1.jpg
-│   │   ├── cover_art_image2.jpg
-│   │   └── ...
-│   └── highest_resolution_images_20240702_123456.json
+│ ├── IV
+│ │ ├── IV.json
+│ │ ├── cover_art_image1.jpg
+│ │ ├── cover_art_image2.jpg
+│ │ └── ...
+│ ├── Physical Graffiti
+│ │ ├── Physical_Graffiti.json
+│ │ ├── cover_art_image1.jpg
+│ │ ├── cover_art_image2.jpg
+│ │ └── ...
+│ └── highest_resolution_images_20240702_123456.json
 
 - Each artist has a directory.
 - Each album by an artist has its own directory within the artist's directory.
@@ -146,21 +148,59 @@ This JSON file contains metadata about the cover art images, including their URL
 
 ## Notes
 
-Ensure you have the required Python packages installed. It's recommended to use `poetry` for managing dependencies:
+Ensure you have the required Python packages installed. This project now uses `uv` (https://github.com/astral-sh/uv) for ultra-fast dependency management and isolated environments.
 
-1. Install `poetry` if you haven't already:
+### Setup with uv
+
+1. Install uv (macOS/Homebrew):
+
    ```sh
-   curl -sSL https://install.python-poetry.org | python3 -
+   brew install astral-sh/astral/uv
    ```
 
-2. Install the dependencies using `poetry`:
+   Or via curl:
+
    ```sh
-   poetry install
+   curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
 
-The required packages are:
+2. Create / sync the environment (installs dependencies into a managed .venv):
 
-    - aiohttp
-    - PIL (Pillow)
-    - tenacity
-    - prompt_toolkit (for enhanced input handling)
+   ```sh
+   uv sync
+   ```
+
+3. Run the CLI (installed as an entry point):
+
+   ```sh
+   uv run cover-art-hunter --verbosity INFO --config_file path/to/config.json
+   ```
+
+   Or start interactive mode:
+
+   ```sh
+   uv run cover-art-hunter
+   ```
+
+4. Using the module directly (equivalent):
+
+   ```sh
+   uv run python -m cover_art_hunter.cover_art_hunter --config_file path/to/config.json
+   ```
+
+5. Add a new dependency:
+
+   ```sh
+   uv add <package-name>
+   ```
+
+6. Update all dependencies & regenerate the lockfile:
+   ```sh
+   uv sync --upgrade
+   ```
+
+The required runtime dependencies are declared in `pyproject.toml` and installed automatically by `uv sync`.
+
+### CLI Name Change
+
+The executable is now installed as `cover-art-hunter` (hyphenated) rather than invoking `python cover_art_hunter.py` directly. The previous usage still works via `python -m cover_art_hunter.cover_art_hunter` if preferred.
